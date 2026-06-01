@@ -5,1631 +5,693 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>ABYSS - Browser RPG</title>
+    <title>ABYSS - AAA Browser RPG</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --primary: #1a1a2e;
+            --primary: #0a0e27;
             --secondary: #16213e;
             --accent: #e94560;
             --gold: #ffd700;
-            --danger: #c0392b;
             --success: #27ae60;
             --warning: #f39c12;
             --text: #ecf0f1;
-            --text-muted: #95a5a6;
-            --border: #34495e;
-            --rarity-common: #999999;
-            --rarity-uncommon: #1eff00;
-            --rarity-rare: #0070dd;
-            --rarity-epic: #a335ee;
-            --rarity-legendary: #ff8000;
-            --rarity-mythic: #e61cff;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            background: var(--primary);
-            color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #app {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .screen {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: none;
-            flex-direction: column;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
-
-        .screen.active {
-            display: flex;
-            opacity: 1;
-            z-index: 10;
-        }
-
-        /* ===== ONBOARDING SCREEN ===== */
-        .onboarding-container {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0f3460 0%, #16213e 50%, #0f3460 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .letter {
-            background: linear-gradient(135deg, #2c1810 0%, #3d2817 100%);
-            border: 2px solid #8b7355;
-            border-radius: 4px;
-            padding: 30px;
-            max-width: 500px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            animation: slideIn 0.6s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .letter h1 {
-            color: #ffd700;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 28px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-
-        .letter p {
-            color: #e8dcc0;
-            line-height: 1.8;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .letter .signature {
-            text-align: right;
-            color: #d4a574;
-            margin-top: 30px;
-            font-style: italic;
-        }
-
-        .signature-line {
-            width: 150px;
-            height: 2px;
-            background: #d4a574;
-            margin: 10px 0 5px auto;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 12px 24px;
-            border: 2px solid #e94560;
-            background: linear-gradient(135deg, #e94560, #c0392b);
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        /* ===== CHARACTER CREATION ===== */
-        .char-creation {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .char-form {
-            max-width: 400px;
-            margin: 20px auto;
-            background: rgba(22, 33, 62, 0.8);
-            border: 2px solid #e94560;
-            border-radius: 8px;
-            padding: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #ffd700;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #34495e;
-            color: #ecf0f1;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #e94560;
-            box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
-        }
-
-        .class-preview {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid #34495e;
-            border-radius: 4px;
-            padding: 15px;
-            margin-top: 10px;
-            font-size: 12px;
-            line-height: 1.6;
-            color: #95a5a6;
-        }
-
-        /* ===== MAIN GAME SCREEN ===== */
-        .game-screen {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: var(--primary);
-        }
-
-        .header {
-            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
-            border-bottom: 2px solid #e94560;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .header-stats {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .stat-badge {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #34495e;
-            border-radius: 4px;
-            padding: 6px 12px;
-            font-size: 12px;
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-
-        .stat-label {
-            color: #95a5a6;
-        }
-
-        .stat-value {
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            padding: 8px 14px;
-            font-size: 12px;
-            min-width: 70px;
-        }
-
-        .nav-btn.active {
-            background: linear-gradient(135deg, #e94560, #c0392b);
-            border-color: #ffd700;
-        }
-
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            padding: 16px;
-        }
-
-        /* ===== EXPLORATION ===== */
-        .location-card {
-            background: linear-gradient(135deg, rgba(26,26,46,0.8) 0%, rgba(22,33,62,0.8) 100%);
-            border: 2px solid #34495e;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .location-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
-            transition: left 0.5s ease;
-            pointer-events: none;
-        }
-
-        .location-card:hover {
-            border-color: #e94560;
-            box-shadow: 0 0 20px rgba(233, 69, 96, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .location-card:hover::before {
-            left: 100%;
-        }
-
-        .location-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 10px;
-        }
-
-        .location-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #ffd700;
-        }
-
-        .location-level {
-            background: rgba(233, 69, 96, 0.2);
-            border: 1px solid #e94560;
-            border-radius: 4px;
-            padding: 4px 12px;
-            font-size: 12px;
-            color: #e94560;
-        }
-
-        .location-desc {
-            color: #95a5a6;
-            font-size: 12px;
-            margin-bottom: 10px;
-        }
-
-        .location-rewards {
-            background: rgba(0,0,0,0.2);
-            border-left: 3px solid #27ae60;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-
-        /* ===== BATTLE SCREEN ===== */
-        .battle-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            position: relative;
-        }
-
-        .battle-arena {
-            flex: 1;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-        }
-
-        .combatant {
-            width: 120px;
-            text-align: center;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .combatant-card {
-            background: linear-gradient(135deg, rgba(26,26,46,0.9) 0%, rgba(22,33,62,0.9) 100%);
-            border: 3px solid #34495e;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .combatant-card.player {
-            border-color: #27ae60;
-            box-shadow: 0 0 15px rgba(39, 174, 96, 0.3);
-        }
-
-        .combatant-card.enemy {
-            border-color: #c0392b;
-            box-shadow: 0 0 15px rgba(192, 57, 43, 0.3);
-        }
-
-        .combatant-name {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #ffd700;
-            font-size: 14px;
-        }
-
-        .hp-bar {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #34495e;
-            border-radius: 4px;
-            height: 20px;
-            overflow: hidden;
-            margin-bottom: 5px;
-        }
-
-        .hp-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #c0392b, #e74c3c);
-            width: 100%;
-            transition: width 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            color: white;
-            font-weight: bold;
-        }
-
-        .battle-log {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid #34495e;
-            border-radius: 4px;
-            padding: 10px;
-            height: 80px;
-            overflow-y: auto;
-            font-size: 11px;
-            margin-bottom: 15px;
-        }
-
-        .battle-log-entry {
-            color: #95a5a6;
-            margin-bottom: 4px;
-            padding: 2px 0;
-        }
-
-        .battle-log-entry.damage {
-            color: #c0392b;
-        }
-
-        .battle-log-entry.heal {
-            color: #27ae60;
-        }
-
-        .battle-log-entry.buff {
-            color: #f39c12;
-        }
-
-        .battle-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .action-btn {
-            padding: 12px;
-            font-size: 12px;
-            background: linear-gradient(135deg, rgba(233, 69, 96, 0.7), rgba(192, 57, 43, 0.7));
-            border: 2px solid #e94560;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: bold;
-        }
-
-        .action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* ===== INVENTORY ===== */
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .inventory-slot {
-            aspect-ratio: 1;
-            background: linear-gradient(135deg, rgba(26,26,46,0.8) 0%, rgba(22,33,62,0.8) 100%);
-            border: 2px solid #34495e;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .inventory-slot:hover {
-            border-color: #e94560;
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
-        }
-
-        .inventory-slot.common { border-color: #999999; }
-        .inventory-slot.uncommon { border-color: #1eff00; }
-        .inventory-slot.rare { border-color: #0070dd; }
-        .inventory-slot.epic { border-color: #a335ee; }
-        .inventory-slot.legendary { border-color: #ff8000; }
-        .inventory-slot.mythic { border-color: #e61cff; }
-
-        .item-icon {
-            font-size: 32px;
-            margin-bottom: 5px;
-        }
-
-        .item-name {
-            font-size: 11px;
-            font-weight: bold;
-            text-align: center;
-            color: #ffd700;
-        }
-
-        .item-qty {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        /* ===== GUILD ===== */
-        .guild-info {
-            background: linear-gradient(135deg, rgba(26,26,46,0.8) 0%, rgba(22,33,62,0.8) 100%);
-            border: 2px solid #e94560;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-
-        .guild-rank {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffd700;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .rank-bar {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #34495e;
-            border-radius: 4px;
-            height: 24px;
-            overflow: hidden;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .rank-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #e94560, #ffd700);
-            width: 0%;
-            transition: width 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            color: white;
-            font-weight: bold;
-        }
-
-        /* ===== MODAL ===== */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
-            border: 3px solid #e94560;
-            border-radius: 8px;
-            padding: 25px;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.9);
-            animation: modalSlideIn 0.3s ease;
-        }
-
-        @keyframes modalSlideIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-header {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffd700;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #e94560;
-            padding-bottom: 10px;
-        }
-
-        .modal-body {
-            color: #ecf0f1;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #e94560, #c0392b);
-            border-color: #e94560;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #34495e, #2c3e50);
-            border-color: #34495e;
-        }
-
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.2);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #e94560;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #c0392b;
-        }
-
-        /* ===== RESPONSIVE ===== */
+            --muted: #95a5a6;
+        }
+        html, body { width: 100%; height: 100%; background: var(--primary); color: var(--text); font-family: 'Arial', sans-serif; overflow: hidden; }
+        body { display: flex; flex-direction: column; }
+        #app { width: 100%; height: 100%; display: flex; flex-direction: column; }
+        .screen { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 1; }
+        .screen.active { display: flex; z-index: 10; }
+        
+        /* Header */
+        .header { background: linear-gradient(135deg, #16213e, #0f3460); border-bottom: 2px solid var(--accent); padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; z-index: 50; }
+        .stat-badge { background: rgba(0,0,0,0.4); border: 1px solid #34495e; padding: 6px 12px; border-radius: 4px; font-size: 11px; display: flex; gap: 5px; }
+        .stat-label { color: var(--muted); }
+        .stat-value { color: var(--gold); font-weight: bold; }
+        .nav-btn { padding: 8px 12px; font-size: 11px; border: 2px solid var(--accent); background: linear-gradient(135deg, #e94560, #c0392b); color: white; cursor: pointer; border-radius: 4px; }
+        .nav-btn.active { background: linear-gradient(135deg, var(--gold), #ffed4e); color: #000; }
+        
+        /* Content */
+        .content { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; }
+        
+        /* Cards */
+        .card { background: linear-gradient(135deg, rgba(22,33,62,0.9), rgba(15,52,96,0.9)); border: 2px solid #34495e; border-radius: 6px; padding: 15px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+        .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 0 15px rgba(233,69,96,0.3); }
+        .card-title { color: var(--gold); font-weight: bold; margin-bottom: 8px; }
+        .card-text { font-size: 12px; color: var(--muted); line-height: 1.4; }
+        
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+        .grid-item { aspect-ratio: 1; background: linear-gradient(135deg, rgba(22,33,62,0.8), rgba(15,52,96,0.8)); border: 2px solid #34495e; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; text-align: center; font-size: 10px; }
+        .grid-item:hover { border-color: var(--accent); transform: scale(1.05); }
+        .grid-item.common { border-color: #999; }
+        .grid-item.uncommon { border-color: #1eff00; }
+        .grid-item.rare { border-color: #0070dd; }
+        .grid-item.epic { border-color: #a335ee; }
+        .grid-item.legendary { border-color: #ff8000; }
+        .grid-item.mythic { border-color: #e61cff; }
+        
+        /* Battle */
+        .battle-screen { width: 100%; height: 100%; display: flex; flex-direction: column; background: linear-gradient(135deg, #0a0e27, #16213e); }
+        .battle-arena { flex: 1; display: flex; justify-content: space-around; align-items: center; padding: 15px; }
+        .battle-combatant { text-align: center; width: 100px; }
+        .battle-card { background: rgba(22,33,62,0.9); border: 3px solid #34495e; border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+        .battle-card.player { border-color: var(--success); box-shadow: 0 0 10px rgba(39,174,96,0.3); }
+        .battle-card.enemy { border-color: #c0392b; box-shadow: 0 0 10px rgba(192,57,43,0.3); }
+        .hp-bar { background: rgba(0,0,0,0.4); border: 1px solid #34495e; height: 18px; border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
+        .hp-fill { height: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); width: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: bold; }
+        .battle-log { background: rgba(0,0,0,0.5); border: 1px solid #34495e; border-radius: 4px; padding: 10px; height: 70px; overflow-y: auto; font-size: 10px; margin-bottom: 12px; }
+        .log-entry { color: var(--muted); margin-bottom: 3px; }
+        .log-entry.damage { color: #e74c3c; }
+        .log-entry.heal { color: var(--success); }
+        .battle-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .action-btn { padding: 10px; font-size: 11px; background: linear-gradient(135deg, var(--accent), #c0392b); color: white; border: 2px solid var(--accent); border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        /* Modal */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.active { display: flex; }
+        .modal-content { background: linear-gradient(135deg, #16213e, #0f3460); border: 3px solid var(--accent); border-radius: 8px; padding: 20px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+        .modal-title { color: var(--gold); font-size: 18px; font-weight: bold; margin-bottom: 12px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; }
+        .modal-text { color: var(--text); font-size: 12px; line-height: 1.5; margin-bottom: 15px; }
+        .modal-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { padding: 10px 16px; border: 2px solid var(--accent); background: linear-gradient(135deg, var(--accent), #c0392b); color: white; font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; transition: all 0.2s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(233,69,96,0.4); }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+        
+        /* Responsive */
         @media (max-width: 600px) {
-            .header {
-                padding: 10px 12px;
-            }
-
-            .inventory-grid {
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            }
-
-            .battle-actions {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                max-width: 90vw;
-            }
-
-            .char-form {
-                max-width: 95vw;
-            }
+            .header { padding: 8px 10px; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); }
+            .battle-actions { grid-template-columns: 1fr; }
         }
-
-        /* ===== ANIMATIONS ===== */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-        }
-
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 5px rgba(233, 69, 96, 0.3); }
-            50% { box-shadow: 0 0 15px rgba(233, 69, 96, 0.6); }
-        }
-
-        .legendary-item {
-            animation: glow 2s ease-in-out infinite;
-        }
-
-        /* ===== UTILITY ===== */
-        .hidden {
-            display: none !important;
-        }
-
-        .flex-center {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .text-gold {
-            color: #ffd700;
-        }
-
-        .text-success {
-            color: #27ae60;
-        }
-
-        .text-danger {
-            color: #c0392b;
-        }
-
-        .text-muted {
-            color: #95a5a6;
-        }
+        
+        .hidden { display: none !important; }
+        h2 { color: var(--gold); margin: 15px 0 10px; font-size: 16px; }
+        h3 { color: var(--gold); margin: 10px 0 5px; font-size: 14px; }
+        .success-text { color: var(--success); }
+        .danger-text { color: #e74c3c; }
+        .warning-text { color: var(--warning); }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- ONBOARDING SCREEN -->
-        <div id="onboardingScreen" class="screen onboarding-container active">
-            <div class="letter">
-                <h1>⚔ WELCOME TO ABYSS ⚔</h1>
-                <p>Greetings, brave adventurer!</p>
-                <p>The King has dispatched a letter inviting you to join the Adventurers' Guild, where glory, wealth, and power await those with the courage to seek them.</p>
-                <p>The world teems with unimaginable monsters, ancient dungeons, and untold treasures. Your journey from nobody to legend begins here.</p>
-                <p>Are you ready to sign the contract and begin your tale?</p>
-                <div class="signature-line"></div>
-                <div class="signature">~ The Guild Master ~</div>
-                <div class="button-group">
-                    <button onclick="GameUI.startCharacterCreation()">✍ SIGN THE CONTRACT</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- CHARACTER CREATION SCREEN -->
-        <div id="charCreationScreen" class="screen">
-            <div class="char-creation">
-                <h1 style="text-align: center; color: #ffd700; margin-bottom: 20px;">CREATE YOUR CHARACTER</h1>
-                <div class="char-form">
-                    <div class="form-group">
-                        <label>CHARACTER NAME</label>
-                        <input type="text" id="charName" placeholder="Enter your name" maxlength="20">
-                    </div>
-                    <div class="form-group">
-                        <label>SELECT CLASS</label>
-                        <select id="charClass" onchange="GameUI.updateClassPreview()">
-                            <option value="warrior">⚔ WARRIOR - Melee damage, High HP</option>
-                            <option value="rogue">🗡 ROGUE - Dodge, Critical strikes</option>
-                            <option value="mage">✨ MAGE - Magic damage, Mana pool</option>
-                            <option value="paladin">🛡 PALADIN - Defense, Healing</option>
-                        </select>
-                    </div>
-                    <div class="class-preview" id="classPreview">
-                        <strong>WARRIOR</strong><br>
-                        HP: 150 | ATK: 25 | DEF: 20 | MAG: 10
-                    </div>
-                    <button onclick="GameUI.createCharacter()" style="width: 100%; margin-top: 20px;">🎮 START ADVENTURE</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- MAIN GAME SCREEN -->
-        <div id="gameScreen" class="screen game-screen">
-            <div class="header">
-                <div class="header-stats">
-                    <div class="stat-badge">
-                        <span class="stat-label">LVL</span>
-                        <span class="stat-value" id="headerLevel">1</span>
-                    </div>
-                    <div class="stat-badge">
-                        <span class="stat-label">EXP</span>
-                        <span class="stat-value" id="headerExp">0/100</span>
-                    </div>
-                    <div class="stat-badge">
-                        <span class="stat-label">HP</span>
-                        <span class="stat-value" id="headerHP">100/100</span>
-                    </div>
-                    <div class="stat-badge">
-                        <span class="stat-label">GOLD</span>
-                        <span class="stat-value" id="headerGold">0</span>
-                    </div>
-                </div>
-                <div class="nav-buttons">
-                    <button class="nav-btn active" onclick="GameUI.switchTab('explore')">EXPLORE</button>
-                    <button class="nav-btn" onclick="GameUI.switchTab('inventory')">INVENTORY</button>
-                    <button class="nav-btn" onclick="GameUI.switchTab('guild')">GUILD</button>
-                    <button class="nav-btn" onclick="GameUI.switchTab('stats')">STATS</button>
-                </div>
-            </div>
-            <div class="content" id="gameContent">
-                <!-- Content will be generated here -->
-            </div>
-        </div>
-
-        <!-- BATTLE SCREEN -->
-        <div id="battleScreen" class="screen">
-            <div class="battle-container">
-                <div class="battle-arena">
-                    <div class="combatant player">
-                        <div class="combatant-card player">
-                            <div class="combatant-name" id="playerBattleName">Player</div>
-                            <div class="hp-bar">
-                                <div class="hp-fill" id="playerBattleHP" style="width: 100%;">
-                                    <span id="playerBattleHPText">100/100</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="text-align: center; color: #95a5a6;">⚔</div>
-                    <div class="combatant enemy">
-                        <div class="combatant-card enemy">
-                            <div class="combatant-name" id="enemyBattleName">Enemy</div>
-                            <div class="hp-bar">
-                                <div class="hp-fill" id="enemyBattleHP" style="width: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c);">
-                                    <span id="enemyBattleHPText">100/100</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="battle-log" id="battleLog">
-                    <div class="battle-log-entry">Battle started!</div>
-                </div>
-                <div class="battle-actions" id="battleActions">
-                    <button class="action-btn" onclick="BattleSystem.executeAction('attack')">ATTACK</button>
-                    <button class="action-btn" onclick="BattleSystem.executeAction('defend')">DEFEND</button>
-                    <button class="action-btn" onclick="BattleSystem.executeAction('special')">SPECIAL</button>
-                    <button class="action-btn" onclick="BattleSystem.executeAction('item')">ITEM</button>
-                </div>
-            </div>
+<div id="app">
+    <!-- ONBOARDING -->
+    <div id="onboardingScreen" class="screen active" style="background: linear-gradient(135deg, #0f3460, #16213e); align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #2c1810, #3d2817); border: 2px solid #8b7355; border-radius: 6px; padding: 25px; max-width: 450px; text-align: center;">
+            <h1 style="color: var(--gold); font-size: 28px; margin-bottom: 20px;">⚔ WELCOME TO ABYSS ⚔</h1>
+            <p style="color: #e8dcc0; line-height: 1.6; margin-bottom: 15px; font-size: 13px;">You've been summoned to join the Adventurers' Guild. A world of monsters, magic, and mystery awaits. Will you answer the call?</p>
+            <button onclick="startGame()" style="width: 100%; margin-top: 20px;">✍ SIGN CONTRACT</button>
         </div>
     </div>
-
-    <!-- MODAL -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" id="modalHeader">Modal</div>
-            <div class="modal-body" id="modalBody">Content</div>
-            <div class="modal-footer" id="modalFooter"></div>
+    
+    <!-- CHARACTER CREATION -->
+    <div id="charCreationScreen" class="screen" style="background: linear-gradient(135deg, #0a0e27, #16213e); align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: rgba(22,33,62,0.9); border: 2px solid var(--accent); border-radius: 8px; padding: 20px; max-width: 400px; width: 100%;">
+            <h2 style="text-align: center; margin-bottom: 15px;">CREATE CHARACTER</h2>
+            <input type="text" id="charName" placeholder="Name" maxlength="15" style="width: 100%; padding: 8px; margin-bottom: 10px; background: rgba(0,0,0,0.4); border: 1px solid #34495e; color: var(--text); border-radius: 4px;">
+            <select id="charClass" style="width: 100%; padding: 8px; margin-bottom: 10px; background: rgba(0,0,0,0.4); border: 1px solid #34495e; color: var(--text); border-radius: 4px;">
+                <option value="warrior">⚔ WARRIOR - HP: 150, ATK: 25, DEF: 20</option>
+                <option value="rogue">🗡 ROGUE - HP: 100, ATK: 30, DEF: 12</option>
+                <option value="mage">✨ MAGE - HP: 80, ATK: 12, DEF: 8</option>
+                <option value="paladin">🛡 PALADIN - HP: 130, ATK: 20, DEF: 30</option>
+            </select>
+            <button onclick="createCharacter()" style="width: 100%;">🎮 START</button>
         </div>
     </div>
+    
+    <!-- MAIN GAME -->
+    <div id="gameScreen" class="screen" style="flex-direction: column;">
+        <div class="header">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div class="stat-badge"><span class="stat-label">LVL</span><span class="stat-value" id="sLevel">1</span></div>
+                <div class="stat-badge"><span class="stat-label">EXP</span><span class="stat-value" id="sExp">0/100</span></div>
+                <div class="stat-badge"><span class="stat-label">HP</span><span class="stat-value" id="sHP">100/100</span></div>
+                <div class="stat-badge"><span class="stat-label">GOLD</span><span class="stat-value" id="sGold">0</span></div>
+                <div class="stat-badge"><span class="stat-label">RANK</span><span class="stat-value" id="sRank">E</span></div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="nav-btn active" onclick="switchTab('explore')">EXPLORE</button>
+                <button class="nav-btn" onclick="switchTab('quest')">QUEST</button>
+                <button class="nav-btn" onclick="switchTab('inventory')">INV</button>
+                <button class="nav-btn" onclick="switchTab('craft')">CRAFT</button>
+                <button class="nav-btn" onclick="switchTab('guild')">GUILD</button>
+                <button class="nav-btn" onclick="switchTab('stats')">STATS</button>
+            </div>
+        </div>
+        <div class="content" id="gameContent"></div>
+    </div>
+    
+    <!-- BATTLE SCREEN -->
+    <div id="battleScreen" class="screen battle-screen">
+        <div class="battle-arena">
+            <div class="battle-combatant">
+                <div class="battle-card player">
+                    <div style="color: var(--gold); font-weight: bold; margin-bottom: 5px; font-size: 12px;" id="battlePlayerName">Player</div>
+                    <div class="hp-bar"><div class="hp-fill" id="battlePlayerHP" style="width: 100%;"><span id="battlePlayerHPText">100/100</span></div></div>
+                </div>
+            </div>
+            <div style="text-align: center; color: var(--muted);">⚔</div>
+            <div class="battle-combatant">
+                <div class="battle-card enemy">
+                    <div style="color: var(--gold); font-weight: bold; margin-bottom: 5px; font-size: 12px;" id="battleEnemyName">Enemy</div>
+                    <div class="hp-bar"><div class="hp-fill" id="battleEnemyHP" style="width: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c);"><span id="battleEnemyHPText">100/100</span></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="battle-log" id="battleLog"></div>
+        <div class="battle-actions">
+            <button class="action-btn" onclick="battle.attack()">⚔ ATTACK</button>
+            <button class="action-btn" onclick="battle.defend()">🛡 DEFEND</button>
+            <button class="action-btn" onclick="battle.special()">✨ SPECIAL</button>
+            <button class="action-btn" onclick="battle.heal()">💚 HEAL</button>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // ============================================
-        // CONSTANTS & CONFIGURATION
-        // ============================================
-        const CONFIG = {
-            LEVEL_CAP: Infinity,
-            BASE_XP_REQUIREMENT: 100,
-            XP_MULTIPLIER: 1.15,
-            BASE_HP: 100,
-            SAVE_KEY: 'abyss_savegame',
-            TICK_RATE: 1000,
-            RARITIES: ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'],
-            RARITY_WEIGHTS: [0.6, 0.25, 0.1, 0.04, 0.009, 0.001],
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title" id="modalTitle">Modal</div>
+        <div class="modal-text" id="modalText">Content</div>
+        <div class="modal-buttons" id="modalButtons"></div>
+    </div>
+</div>
+
+<script>
+const CONFIG = {
+    LEVEL_CAP: Infinity,
+    BASE_XP: 100,
+    XP_MULT: 1.15,
+    SAVE_KEY: 'abyss_v2'
+};
+
+// Game State
+let gameState = {
+    player: null,
+    inventory: [],
+    quests: [],
+    guild: null,
+    npcs: [],
+    events: [],
+    battle: null
+};
+
+// Load game
+function loadGame() {
+    const data = localStorage.getItem(CONFIG.SAVE_KEY);
+    if (data) {
+        gameState = JSON.parse(data);
+        return true;
+    }
+    return false;
+}
+
+// Save game
+function saveGame() {
+    localStorage.setItem(CONFIG.SAVE_KEY, JSON.stringify(gameState));
+}
+
+// Player class
+class Player {
+    constructor(name, classType) {
+        this.name = name;
+        this.class = classType;
+        this.level = 1;
+        this.exp = 0;
+        this.expRequired = this.getExpRequired(1);
+        this.hp = this.getMaxHP();
+        this.maxHP = this.getMaxHP();
+        this.gold = 0;
+        this.stats = this.getStats(classType);
+        this.guildRank = 'E';
+        this.guildExp = 0;
+    }
+    
+    getStats(classType) {
+        const base = {
+            warrior: { atk: 25, def: 20, mag: 10, spd: 12 },
+            rogue: { atk: 30, def: 12, mag: 15, spd: 22 },
+            mage: { atk: 12, def: 8, mag: 35, spd: 18 },
+            paladin: { atk: 20, def: 30, mag: 20, spd: 10 }
         };
+        return base[classType] || base.warrior;
+    }
+    
+    getMaxHP() { return this.class === 'mage' ? 80 : this.class === 'rogue' ? 100 : this.class === 'paladin' ? 130 : 150; }
+    getExpRequired(level) { return Math.floor(CONFIG.BASE_XP * Math.pow(CONFIG.XP_MULT, level - 1)); }
+    
+    gainExp(amount) {
+        this.exp += amount;
+        while (this.exp >= this.expRequired) {
+            this.exp -= this.expRequired;
+            this.levelUp();
+        }
+        gameState.guild.exp += Math.floor(amount * 0.5);
+        checkGuildRankUp();
+    }
+    
+    levelUp() {
+        this.level++;
+        this.expRequired = this.getExpRequired(this.level);
+        this.maxHP = Math.floor(this.getMaxHP() * Math.pow(1.08, this.level - 1));
+        this.hp = this.maxHP;
+        this.stats.atk = Math.floor(this.stats.atk * 1.08);
+        this.stats.def = Math.floor(this.stats.def * 1.08);
+        this.stats.mag = Math.floor(this.stats.mag * 1.08);
+    }
+}
 
-        // ============================================
-        // EVENT BUS
-        // ============================================
-        class EventBus {
-            constructor() {
-                this.events = new Map();
-            }
-
-            on(event, callback) {
-                if (!this.events.has(event)) {
-                    this.events.set(event, []);
-                }
-                this.events.get(event).push(callback);
-            }
-
-            off(event, callback) {
-                if (this.events.has(event)) {
-                    const callbacks = this.events.get(event);
-                    const index = callbacks.indexOf(callback);
-                    if (index > -1) callbacks.splice(index, 1);
-                }
-            }
-
-            emit(event, data = null) {
-                if (this.events.has(event)) {
-                    this.events.get(event).forEach(callback => callback(data));
-                }
-            }
-
-            clear() {
-                this.events.clear();
+// Monster class
+class Monster {
+    constructor(level, name, rarity = 'common') {
+        this.level = level;
+        this.name = name;
+        this.rarity = rarity;
+        this.hp = this.getMaxHP();
+        this.maxHP = this.getMaxHP();
+        this.stats = this.getStats();
+        this.exp = Math.floor(level * 10 * (1 + level * 0.1));
+        this.loot = this.generateLoot();
+    }
+    
+    getMaxHP() {
+        const base = 10 + this.level * 1.5;
+        const mult = 1 + (Math.random() - 0.5) * 0.4;
+        return Math.floor(base * 8 * mult);
+    }
+    
+    getStats() {
+        const base = 10 + this.level * 1.5;
+        return {
+            atk: Math.floor(base * 1.2),
+            def: Math.floor(base * 0.8),
+            mag: Math.floor(base * 0.6),
+            spd: Math.floor(5 + this.level * 0.3)
+        };
+    }
+    
+    generateLoot() {
+        const names = ['Fang', 'Claw', 'Hide', 'Core', 'Essence', 'Eye', 'Scale', 'Horn'];
+        const name = `${this.name}'s ${names[Math.floor(Math.random() * names.length)]}`;
+        const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+        const weights = [0.6, 0.25, 0.1, 0.04, 0.01];
+        let rarity = 'common';
+        let roll = Math.random();
+        let sum = 0;
+        for (let i = 0; i < rarities.length; i++) {
+            sum += weights[i];
+            if (roll <= sum) {
+                rarity = rarities[i];
+                break;
             }
         }
+        const value = Math.floor((10 + this.level * 5) * (1 + rarities.indexOf(rarity) * 0.5));
+        return { name, rarity, value };
+    }
+}
 
-        const eventBus = new EventBus();
-
-        // ============================================
-        // GAME STATE MANAGER
-        // ============================================
-        class GameState {
-            constructor() {
-                this.player = null;
-                this.currentBattle = null;
-                this.locations = [];
-                this.inventory = [];
-                this.guild = null;
-                this.quests = [];
-            }
-
-            save() {
-                const data = {
-                    player: this.player,
-                    inventory: this.inventory,
-                    guild: this.guild,
-                    timestamp: Date.now(),
-                };
-                localStorage.setItem(CONFIG.SAVE_KEY, JSON.stringify(data));
-            }
-
-            load() {
-                const data = localStorage.getItem(CONFIG.SAVE_KEY);
-                if (!data) return false;
-                const parsed = JSON.parse(data);
-                this.player = parsed.player;
-                this.inventory = parsed.inventory;
-                this.guild = parsed.guild;
-                return true;
-            }
-
-            clear() {
-                localStorage.removeItem(CONFIG.SAVE_KEY);
-            }
+// Battle system
+const battle = {
+    turn: 0,
+    playerDefending: false,
+    log: [],
+    
+    attack() {
+        const p = gameState.player;
+        const e = gameState.battle.enemy;
+        const pDmg = Math.floor((p.stats.atk * (0.8 + Math.random() * 0.4)) - e.stats.def * 0.2);
+        const eDmg = Math.floor((e.stats.atk * (0.8 + Math.random() * 0.4)) - p.stats.def * 0.2);
+        
+        e.hp -= pDmg;
+        this.addLog(`${p.name} attacks for ${pDmg} DMG!`, 'damage');
+        
+        if (e.hp <= 0) {
+            this.endBattle(true, pDmg);
+            return;
         }
-
-        const gameState = new GameState();
-
-        // ============================================
-        // PLAYER CLASS
-        // ============================================
-        class Player {
-            constructor(name, classType) {
-                this.name = name;
-                this.class = classType;
-                this.level = 1;
-                this.exp = 0;
-                this.expRequired = this.calculateExpRequired(1);
-                this.stats = this.initializeStats(classType);
-                this.currentHP = this.stats.maxHP;
-                this.gold = 0;
-                this.createdAt = Date.now();
-                this.playTime = 0;
-            }
-
-            initializeStats(classType) {
-                const baseStats = {
-                    warrior: { maxHP: 150, attack: 25, defense: 20, magic: 10, speed: 12, luck: 10 },
-                    rogue: { maxHP: 100, attack: 30, defense: 12, magic: 15, speed: 22, luck: 20 },
-                    mage: { maxHP: 80, attack: 12, defense: 8, magic: 35, speed: 18, luck: 15 },
-                    paladin: { maxHP: 130, attack: 20, defense: 30, magic: 20, speed: 10, luck: 12 },
-                };
-                return baseStats[classType] || baseStats.warrior;
-            }
-
-            calculateExpRequired(level) {
-                return Math.floor(CONFIG.BASE_XP_REQUIREMENT * Math.pow(CONFIG.XP_MULTIPLIER, level - 1));
-            }
-
-            gainExp(amount) {
-                this.exp += amount;
-                eventBus.emit('player:expGain', amount);
-
-                while (this.exp >= this.expRequired && this.level < CONFIG.LEVEL_CAP) {
-                    this.exp -= this.expRequired;
-                    this.levelUp();
-                }
-            }
-
-            levelUp() {
-                this.level++;
-                this.expRequired = this.calculateExpRequired(this.level);
-                
-                // Scale stats
-                const scaleFactor = 1.08;
-                this.stats.maxHP = Math.floor(this.stats.maxHP * scaleFactor);
-                this.stats.attack = Math.floor(this.stats.attack * scaleFactor);
-                this.stats.defense = Math.floor(this.stats.defense * scaleFactor);
-                this.stats.magic = Math.floor(this.stats.magic * scaleFactor);
-                
-                this.currentHP = this.stats.maxHP;
-                eventBus.emit('player:levelUp', this.level);
-            }
-
-            heal(amount) {
-                const oldHP = this.currentHP;
-                this.currentHP = Math.min(this.currentHP + amount, this.stats.maxHP);
-                return this.currentHP - oldHP;
-            }
-
-            takeDamage(amount) {
-                this.currentHP = Math.max(0, this.currentHP - amount);
-                return this.currentHP === 0;
-            }
-
-            isAlive() {
-                return this.currentHP > 0;
-            }
+        
+        p.hp -= eDmg;
+        this.addLog(`${e.name} attacks for ${eDmg} DMG!`, 'damage');
+        
+        if (p.hp <= 0) {
+            this.endBattle(false, pDmg);
         }
-
-        // ============================================
-        // MONSTER CLASS
-        // ============================================
-        class Monster {
-            constructor(id, name, level, rarity = 'common') {
-                this.id = id;
-                this.name = name;
-                this.level = level;
-                this.rarity = rarity;
-                this.baseStats = this.generateStats(level);
-                this.stats = { ...this.baseStats };
-                this.currentHP = this.stats.maxHP;
-                this.exp = this.calculateExp(level);
-                this.loot = this.generateLoot();
-            }
-
-            generateStats(level) {
-                const baseFactor = 10 + level * 1.5;
-                const mutation = (Math.random() - 0.5) * 0.4; // -20% to +20%
-                const multiplier = 1 + mutation;
-
-                return {
-                    maxHP: Math.floor(baseFactor * 8 * multiplier),
-                    attack: Math.floor(baseFactor * 1.2 * multiplier),
-                    defense: Math.floor(baseFactor * 0.8 * multiplier),
-                    magic: Math.floor(baseFactor * 0.6 * multiplier),
-                    speed: Math.floor(5 + level * 0.3 * multiplier),
-                };
-            }
-
-            calculateExp(level) {
-                return Math.floor(level * 10 * (1 + level * 0.1));
-            }
-
-            generateLoot() {
-                const itemNames = ['Fang', 'Claw', 'Hide', 'Scale', 'Horn', 'Eye', 'Core', 'Essence'];
-                const baseValue = 10 + this.level * 5;
-                return {
-                    name: `${this.name}'s ${itemNames[Math.floor(Math.random() * itemNames.length)]}`,
-                    rarity: this.rarity,
-                    value: Math.floor(baseValue * (1 + CONFIG.RARITY_WEIGHTS.indexOf(this.rarity))),
-                };
-            }
-
-            takeDamage(amount) {
-                this.currentHP = Math.max(0, this.currentHP - amount);
-                return this.currentHP === 0;
-            }
-
-            isAlive() {
-                return this.currentHP > 0;
-            }
+        this.updateUI();
+    },
+    
+    defend() {
+        this.playerDefending = true;
+        const eDmg = Math.floor((gameState.battle.enemy.stats.atk * (0.8 + Math.random() * 0.4)) - gameState.player.stats.def * 0.6);
+        gameState.player.hp -= Math.max(1, eDmg);
+        this.addLog(`${gameState.player.name} defends! Damage reduced!`, 'heal');
+        if (gameState.player.hp <= 0) this.endBattle(false);
+        this.updateUI();
+    },
+    
+    special() {
+        const p = gameState.player;
+        const e = gameState.battle.enemy;
+        const pDmg = Math.floor(p.stats.atk * 1.8 - e.stats.def * 0.1);
+        e.hp -= pDmg;
+        this.addLog(`${p.name} uses SPECIAL! ${pDmg} DMG!`, 'damage');
+        if (e.hp <= 0) {
+            this.endBattle(true, pDmg);
+            return;
         }
-
-        // ============================================
-        // COMBAT SYSTEM
-        // ============================================
-        class BattleSystem {
-            static current = null;
-
-            static startBattle(enemy) {
-                this.current = {
-                    player: gameState.player,
-                    enemy: enemy,
-                    log: [],
-                    turn: 0,
-                    playerDefending: false,
-                    enemyDefending: false,
-                };
-                gameState.currentBattle = this.current;
-                eventBus.emit('battle:start', enemy);
-                GameUI.showBattle();
-            }
-
-            static executeAction(action) {
-                if (!this.current) return;
-
-                const { player, enemy } = this.current;
-                this.current.turn++;
-
-                let playerDamage = 0;
-                let enemyDamage = 0;
-
-                switch (action) {
-                    case 'attack':
-                        playerDamage = this.calculateDamage(player, enemy, false);
-                        enemyDamage = this.calculateDamage(enemy, player, false);
-                        this.addLog(`${player.name} attacks for ${playerDamage} damage!`, 'damage');
-                        break;
-                    case 'defend':
-                        this.current.playerDefending = true;
-                        playerDamage = this.calculateDamage(player, enemy, true);
-                        enemyDamage = this.calculateDamage(enemy, player, false) * 0.5;
-                        this.addLog(`${player.name} takes a defensive stance!`, 'buff');
-                        break;
-                    case 'special':
-                        playerDamage = this.calculateDamage(player, enemy, false) * 1.5;
-                        enemyDamage = this.calculateDamage(enemy, player, false) * 0.7;
-                        this.addLog(`${player.name} uses a SPECIAL ATTACK for ${playerDamage} damage!`, 'damage');
-                        break;
-                    case 'item':
-                        const healed = player.heal(50);
-                        this.addLog(`${player.name} heals for ${healed} HP!`, 'heal');
-                        enemyDamage = this.calculateDamage(enemy, player, false) * 0.8;
-                        break;
-                }
-
-                if (playerDamage > 0) {
-                    enemy.takeDamage(playerDamage);
-                }
-
-                if (enemyDamage > 0 && player.isAlive()) {
-                    player.takeDamage(enemyDamage);
-                    this.addLog(`${enemy.name} attacks for ${enemyDamage} damage!`, 'damage');
-                }
-
-                this.current.playerDefending = false;
-
-                GameUI.updateBattleUI();
-
-                if (!enemy.isAlive()) {
-                    this.endBattle(true);
-                } else if (!player.isAlive()) {
-                    this.endBattle(false);
-                }
-            }
-
-            static calculateDamage(attacker, defender, isDefending) {
-                const variance = 0.8 + Math.random() * 0.4;
-                const baseDamage = attacker.stats.attack * variance;
-                const defenseReduction = isDefending ? defender.stats.defense * 1.3 : defender.stats.defense;
-                const finalDamage = Math.max(1, Math.floor(baseDamage - defenseReduction * 0.3));
-                return Math.floor(finalDamage);
-            }
-
-            static addLog(message, type = 'normal') {
-                this.current.log.push({ message, type });
-                if (this.current.log.length > 10) {
-                    this.current.log.shift();
-                }
-            }
-
-            static endBattle(victory) {
-                const { player, enemy } = this.current;
-                if (victory) {
-                    const expGain = enemy.exp;
-                    const goldGain = enemy.loot.value;
-                    player.gainExp(expGain);
-                    player.gold += goldGain;
-                    gameState.inventory.push(enemy.loot);
-                    this.addLog(`VICTORY! Gained ${expGain} EXP and ${goldGain} gold!`, 'heal');
-                    eventBus.emit('battle:victory', { exp: expGain, gold: goldGain, loot: enemy.loot });
-                } else {
-                    player.currentHP = player.stats.maxHP * 0.5;
-                    player.gold = Math.floor(player.gold * 0.9);
-                    this.addLog(`DEFEAT! Lost 10% of gold.`, 'damage');
-                    eventBus.emit('battle:defeat');
-                }
-                this.current = null;
-                setTimeout(() => GameUI.exitBattle(), 2000);
-            }
+        const eDmg = Math.floor(e.stats.atk * 0.6 - p.stats.def * 0.2);
+        p.hp -= eDmg;
+        this.addLog(`${e.name} strikes back for ${eDmg} DMG!`, 'damage');
+        if (p.hp <= 0) this.endBattle(false);
+        this.updateUI();
+    },
+    
+    heal() {
+        const healed = Math.floor(gameState.player.maxHP * 0.3);
+        gameState.player.hp = Math.min(gameState.player.hp + healed, gameState.player.maxHP);
+        this.addLog(`${gameState.player.name} heals for ${healed} HP!`, 'heal');
+        const eDmg = Math.floor(gameState.battle.enemy.stats.atk * 0.7 - gameState.player.stats.def * 0.2);
+        gameState.player.hp -= eDmg;
+        if (gameState.player.hp <= 0) this.endBattle(false);
+        this.addLog(`${gameState.battle.enemy.name} attacks for ${eDmg} DMG!`, 'damage');
+        this.updateUI();
+    },
+    
+    addLog(msg, type = 'normal') {
+        this.log.push({ msg, type });
+        if (this.log.length > 8) this.log.shift();
+    },
+    
+    updateUI() {
+        const p = gameState.player;
+        const e = gameState.battle.enemy;
+        
+        document.getElementById('battlePlayerName').textContent = p.name;
+        document.getElementById('battlePlayerHP').style.width = (p.hp / p.maxHP * 100) + '%';
+        document.getElementById('battlePlayerHPText').textContent = `${p.hp}/${p.maxHP}`;
+        
+        document.getElementById('battleEnemyName').textContent = e.name;
+        document.getElementById('battleEnemyHP').style.width = (e.hp / e.maxHP * 100) + '%';
+        document.getElementById('battleEnemyHPText').textContent = `${e.hp}/${e.maxHP}`;
+        
+        document.getElementById('battleLog').innerHTML = this.log.map(l => `<div class="log-entry ${l.type}">${l.msg}</div>`).join('');
+        document.getElementById('battleLog').scrollTop = document.getElementById('battleLog').scrollHeight;
+    },
+    
+    endBattle(victory) {
+        const e = gameState.battle.enemy;
+        if (victory) {
+            gameState.player.gainExp(e.exp);
+            gameState.player.gold += e.loot.value;
+            gameState.inventory.push(e.loot);
+            this.addLog(`VICTORY! +${e.exp} EXP, +${e.loot.value} GOLD!`, 'heal');
+        } else {
+            gameState.player.hp = gameState.player.maxHP * 0.5;
+            gameState.player.gold = Math.floor(gameState.player.gold * 0.9);
+            this.addLog(`DEFEAT! Lost 10% gold!`, 'damage');
         }
+        this.updateUI();
+        setTimeout(() => {
+            gameState.battle = null;
+            showScreen('gameScreen');
+            switchTab('explore');
+            saveGame();
+        }, 2000);
+    }
+};
 
-        // ============================================
-        // WORLD SYSTEM
-        // ============================================
-        class WorldSystem {
-            static locations = [
-                { id: 1, name: 'Grasslands', minLevel: 1, monsterLevel: 1, emoji: '🌾', desc: 'Peaceful green fields. Easy hunting ground.' },
-                { id: 2, name: 'Dark Forest', minLevel: 5, monsterLevel: 5, emoji: '🌲', desc: 'Dense forest shrouded in mystery.' },
-                { id: 3, name: 'Mountain Peak', minLevel: 10, monsterLevel: 10, emoji: '⛰', desc: 'Treacherous peaks with rare minerals.' },
-                { id: 4, name: 'Volcanic Crater', minLevel: 20, monsterLevel: 20, emoji: '🌋', desc: 'Lava flows and fire creatures.' },
-                { id: 5, name: 'Frozen Tundra', minLevel: 30, monsterLevel: 30, emoji: '❄', desc: 'Glacial wastelands with ice beings.' },
-                { id: 6, name: 'Abyss Gate', minLevel: 50, monsterLevel: 50, emoji: '🕳', desc: 'Gateway to the void itself.' },
-                { id: 7, name: 'Celestial Spire', minLevel: 100, monsterLevel: 100, emoji: '✨', desc: 'Ancient tower touching the heavens.' },
-            ];
+// Locations
+const locations = [
+    { name: 'Grasslands', level: 1, emoji: '🌾', monsters: ['Goblin', 'Slime', 'Rat'] },
+    { name: 'Dark Forest', level: 5, emoji: '🌲', monsters: ['Wolf', 'Skeleton', 'Bat'] },
+    { name: 'Mountain', level: 10, emoji: '⛰', monsters: ['Orc', 'Golem', 'Giant'] },
+    { name: 'Volcano', level: 20, emoji: '🌋', monsters: ['Dragon', 'Infernal', 'Demon'] },
+    { name: 'Tundra', level: 30, emoji: '❄', monsters: ['Frost Giant', 'Ice Wraith', 'Yeti'] },
+    { name: 'Abyss', level: 50, emoji: '🕳', monsters: ['Abyssal', 'Shadow', 'Void'] },
+    { name: 'Celestial', level: 100, emoji: '✨', monsters: ['Arch Angel', 'Ancient One', 'God'] },
+];
 
-            static monsterNames = [
-                'Goblin', 'Orc', 'Troll', 'Dragon', 'Phoenix', 'Hydra', 'Basilisk', 'Wraith',
-                'Lich', 'Demon', 'Angel', 'Golem', 'Gargoyle', 'Banshee', 'Vampire', 'Werewolf',
-            ];
+// Crafting recipes
+const recipes = [
+    { name: 'Health Potion', requires: [{ name: "Goblin's Claw", qty: 2 }], result: { name: 'Health Potion', value: 50 } },
+    { name: 'Iron Sword', requires: [{ name: "Orc's Hide", qty: 1 }, { name: "Golem's Core", qty: 1 }], result: { name: 'Iron Sword', value: 200 } },
+    { name: 'Mana Elixir', requires: [{ name: "Bat's Eye", qty: 3 }], result: { name: 'Mana Elixir', value: 150 } },
+];
 
-            static generateRarity() {
-                const roll = Math.random();
-                let cumulative = 0;
-                for (let i = 0; i < CONFIG.RARITIES.length; i++) {
-                    cumulative += CONFIG.RARITY_WEIGHTS[i];
-                    if (roll <= cumulative) {
-                        return CONFIG.RARITIES[i];
-                    }
-                }
-                return CONFIG.RARITIES[0];
-            }
+// Quests
+const questPool = [
+    { name: 'Hunt 3 Goblins', target: 'Goblin', count: 3, reward: 100 },
+    { name: 'Defeat 5 Slimes', target: 'Slime', count: 5, reward: 200 },
+    { name: 'Kill Mountain Boss', target: 'Giant', count: 1, reward: 500 },
+];
 
-            static generateMonster(location) {
-                const name = this.monsterNames[Math.floor(Math.random() * this.monsterNames.length)];
-                const variance = 0.9 + Math.random() * 0.2;
-                const level = Math.floor(location.monsterLevel * variance);
-                const rarity = this.generateRarity();
-                return new Monster(Math.random(), name, level, rarity);
-            }
+// UI Functions
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
 
-            static isLocationAccessible(player, location) {
-                return player.level >= location.minLevel;
-            }
+function switchTab(tab) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const content = document.getElementById('gameContent');
+    content.innerHTML = '';
+    
+    if (tab === 'explore') renderExplore();
+    else if (tab === 'quest') renderQuests();
+    else if (tab === 'inventory') renderInventory();
+    else if (tab === 'craft') renderCraft();
+    else if (tab === 'guild') renderGuild();
+    else if (tab === 'stats') renderStats();
+}
 
-            static getAccessibleLocations(player) {
-                return this.locations.filter(loc => this.isLocationAccessible(player, loc));
-            }
+function renderExplore() {
+    let html = '<h2>⚔ LOCATIONS</h2>';
+    locations.forEach(loc => {
+        if (gameState.player.level >= loc.level) {
+            html += `<div class="card" onclick="startBattle('${loc.name}', '${loc.monsters[0]}')">
+                <div class="card-title">${loc.emoji} ${loc.name}</div>
+                <div class="card-text">Level: ${loc.level}+ | Monsters here</div>
+            </div>`;
         }
+    });
+    document.getElementById('gameContent').innerHTML = html;
+}
 
-        // ============================================
-        // GUILD SYSTEM
-        // ============================================
-        class GuildSystem {
-            static ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
-            static rankProgression = [
-                { rank: 'E', xpRequired: 1000, questsRequired: 5 },
-                { rank: 'D', xpRequired: 5000, questsRequired: 20 },
-                { rank: 'C', xpRequired: 25000, questsRequired: 50 },
-                { rank: 'B', xpRequired: 100000, questsRequired: 150 },
-                { rank: 'A', xpRequired: 500000, questsRequired: 500 },
-                { rank: 'S', xpRequired: 2000000, questsRequired: 2000 },
-            ];
+function renderQuests() {
+    let html = '<h2>📜 QUESTS</h2>';
+    questPool.slice(0, 5).forEach((q, i) => {
+        html += `<div class="card">
+            <div class="card-title">${q.name}</div>
+            <div class="card-text">Kill ${q.count} ${q.target} | Reward: ${q.reward} EXP</div>
+            <button onclick="acceptQuest(${i})" style="width: 100%; margin-top: 8px;">Accept</button>
+        </div>`;
+    });
+    document.getElementById('gameContent').innerHTML = html;
+}
 
-            static initGuild(player) {
-                return {
-                    memberName: player.name,
-                    rank: 'E',
-                    rankIndex: 0,
-                    rankExp: 0,
-                    questsCompleted: 0,
-                    joinedAt: Date.now(),
-                };
-            }
-
-            static updateRankProgress(guild, exp, questsCompleted) {
-                guild.rankExp += exp;
-                guild.questsCompleted += questsCompleted;
-
-                if (guild.rankIndex < this.ranks.length - 1) {
-                    const nextProgression = this.rankProgression[guild.rankIndex + 1];
-                    if (guild.rankExp >= nextProgression.xpRequired && guild.questsCompleted >= nextProgression.questsRequired) {
-                        guild.rankIndex++;
-                        guild.rank = this.ranks[guild.rankIndex];
-                        guild.rankExp = 0;
-                        eventBus.emit('guild:rankUp', guild);
-                    }
-                }
-            }
-
-            static getRankProgress(guild) {
-                const nextProgression = this.rankProgression[Math.min(guild.rankIndex + 1, this.rankProgression.length - 1)];
-                const progress = guild.rankExp / nextProgression.xpRequired;
-                return {
-                    current: guild.rankExp,
-                    required: nextProgression.xpRequired,
-                    percentage: Math.min(progress * 100, 100),
-                };
-            }
-        }
-
-        // ============================================
-        // UI SYSTEM
-        // ============================================
-        class GameUI {
-            static currentTab = 'explore';
-
-            static hideAllScreens() {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            }
-
-            static showScreen(screenId) {
-                this.hideAllScreens();
-                document.getElementById(screenId).classList.add('active');
-            }
-
-            static startCharacterCreation() {
-                this.showScreen('charCreationScreen');
-            }
-
-            static updateClassPreview() {
-                const classType = document.getElementById('charClass').value;
-                const player = new Player('Preview', classType);
-                document.getElementById('classPreview').innerHTML = `
-                    <strong>${classType.toUpperCase()}</strong><br>
-                    HP: ${player.stats.maxHP} | ATK: ${player.stats.attack} | DEF: ${player.stats.defense} | MAG: ${player.stats.magic}
-                `;
-            }
-
-            static createCharacter() {
-                const name = document.getElementById('charName').value.trim();
-                const classType = document.getElementById('charClass').value;
-
-                if (!name) {
-                    alert('Please enter a character name!');
-                    return;
-                }
-
-                gameState.player = new Player(name, classType);
-                gameState.guild = GuildSystem.initGuild(gameState.player);
-                gameState.save();
-
-                this.showScreen('gameScreen');
-                this.renderExplore();
-            }
-
-            static switchTab(tab) {
-                this.currentTab = tab;
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                event.target.classList.add('active');
-
-                switch (tab) {
-                    case 'explore':
-                        this.renderExplore();
-                        break;
-                    case 'inventory':
-                        this.renderInventory();
-                        break;
-                    case 'guild':
-                        this.renderGuild();
-                        break;
-                    case 'stats':
-                        this.renderStats();
-                        break;
-                }
-            }
-
-            static updateHeaderStats() {
-                const p = gameState.player;
-                document.getElementById('headerLevel').textContent = p.level;
-                document.getElementById('headerExp').textContent = `${p.exp}/${p.expRequired}`;
-                document.getElementById('headerHP').textContent = `${p.currentHP}/${p.stats.maxHP}`;
-                document.getElementById('headerGold').textContent = p.gold;
-            }
-
-            static renderExplore() {
-                this.updateHeaderStats();
-                const content = document.getElementById('gameContent');
-                const accessible = WorldSystem.getAccessibleLocations(gameState.player);
-
-                content.innerHTML = `<h2 style="color: #ffd700; margin-bottom: 20px;">🗺 EXPLORE THE WORLD</h2>`;
-
-                accessible.forEach(location => {
-                    const div = document.createElement('div');
-                    div.className = 'location-card';
-                    div.innerHTML = `
-                        <div class="location-header">
-                            <span class="location-name">${location.emoji} ${location.name}</span>
-                            <span class="location-level">Lv.${location.monsterLevel}</span>
-                        </div>
-                        <p class="location-desc">${location.desc}</p>
-                        <div class="location-rewards">
-                            📊 Recommended Level: ${location.minLevel}+<br>
-                            ⭐ Monster Level: ~${location.monsterLevel}
-                        </div>
-                    `;
-                    div.onclick = () => this.enterLocation(location);
-                    content.appendChild(div);
-                });
-            }
-
-            static enterLocation(location) {
-                const monster = WorldSystem.generateMonster(location);
-                BattleSystem.startBattle(monster);
-            }
-
-            static showBattle() {
-                this.showScreen('battleScreen');
-                this.updateBattleUI();
-            }
-
-            static updateBattleUI() {
-                const { player, enemy, log } = BattleSystem.current;
-
-                document.getElementById('playerBattleName').textContent = player.name;
-                document.getElementById('playerBattleHP').style.width = `${(player.currentHP / player.stats.maxHP) * 100}%`;
-                document.getElementById('playerBattleHPText').textContent = `${player.currentHP}/${player.stats.maxHP}`;
-
-                document.getElementById('enemyBattleName').textContent = enemy.name;
-                document.getElementById('enemyBattleHP').style.width = `${(enemy.currentHP / enemy.stats.maxHP) * 100}%`;
-                document.getElementById('enemyBattleHPText').textContent = `${enemy.currentHP}/${enemy.stats.maxHP}`;
-
-                const battleLog = document.getElementById('battleLog');
-                battleLog.innerHTML = log.map(entry => 
-                    `<div class="battle-log-entry ${entry.type}">${entry.message}</div>`
-                ).join('');
-                battleLog.scrollTop = battleLog.scrollHeight;
-            }
-
-            static exitBattle() {
-                this.showScreen('gameScreen');
-                this.renderExplore();
-            }
-
-            static renderInventory() {
-                this.updateHeaderStats();
-                const content = document.getElementById('gameContent');
-                content.innerHTML = `<h2 style="color: #ffd700; margin-bottom: 20px;">🎒 INVENTORY</h2>`;
-
-                if (gameState.inventory.length === 0) {
-                    content.innerHTML += `<p style="color: #95a5a6; text-align: center; margin-top: 40px;">Your inventory is empty. Hunt monsters to collect loot!</p>`;
-                    return;
-                }
-
-                const grid = document.createElement('div');
-                grid.className = 'inventory-grid';
-
-                gameState.inventory.forEach((item, idx) => {
-                    const slot = document.createElement('div');
-                    slot.className = `inventory-slot ${item.rarity}`;
-                    slot.innerHTML = `
-                        <div class="item-icon">💎</div>
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-qty">1</div>
-                    `;
-                    slot.onclick = () => this.showItemDetail(item);
-                    grid.appendChild(slot);
-                });
-
-                content.appendChild(grid);
-            }
-
-            static showItemDetail(item) {
-                const rarityColor = {
-                    common: '#999999',
-                    uncommon: '#1eff00',
-                    rare: '#0070dd',
-                    epic: '#a335ee',
-                    legendary: '#ff8000',
-                    mythic: '#e61cff',
-                };
-
-                document.getElementById('modalHeader').textContent = item.name;
-                document.getElementById('modalBody').innerHTML = `
-                    <p><strong>Rarity:</strong> <span style="color: ${rarityColor[item.rarity]}">${item.rarity.toUpperCase()}</span></p>
-                    <p><strong>Value:</strong> ${item.value} gold</p>
-                    <p style="margin-top: 15px; color: #95a5a6; font-size: 12px;">This is a drop from a defeated monster. It may have special properties.</p>
-                `;
-                document.getElementById('modalFooter').innerHTML = `
-                    <button class="btn-secondary" onclick="this.closest('.modal').classList.remove('active')">CLOSE</button>
-                    <button class="btn-primary" onclick="GameUI.sellItem()">SELL (${item.value}g)</button>
-                `;
-                document.getElementById('modal').classList.add('active');
-            }
-
-            static sellItem() {
-                const idx = gameState.inventory.findIndex(i => i.name === document.getElementById('modalHeader').textContent);
-                if (idx !== -1) {
-                    const item = gameState.inventory[idx];
-                    gameState.player.gold += item.value;
-                    gameState.inventory.splice(idx, 1);
-                    gameState.save();
-                    document.getElementById('modal').classList.remove('active');
-                    this.renderInventory();
-                }
-            }
-
-            static renderGuild() {
-                this.updateHeaderStats();
-                const content = document.getElementById('gameContent');
-                const guild = gameState.guild;
-
-                content.innerHTML = `
-                    <h2 style="color: #ffd700; margin-bottom: 20px;">⚔ GUILD HALL</h2>
-                    <div class="guild-info">
-                        <div style="color: #95a5a6; font-size: 12px; margin-bottom: 10px;">MEMBER: ${guild.memberName}</div>
-                        <div class="guild-rank">RANK ${guild.rank}</div>
-                        <div style="color: #95a5a6; font-size: 12px; margin-bottom: 10px;">Progress to next rank:</div>
-                        <div class="rank-bar">
-                            <div class="rank-fill" style="width: ${GuildSystem.getRankProgress(guild).percentage}%">
-                                <span>${Math.floor(GuildSystem.getRankProgress(guild).percentage)}%</span>
-                            </div>
-                        </div>
-                        <div style="font-size: 12px; color: #95a5a6;">
-                            Exp: ${guild.rankExp} / ${GuildSystem.getRankProgress(guild).required}<br>
-                            Quests: ${guild.questsCompleted} completed
-                        </div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; margin-top: 16px;">
-                        <p style="color: #ffd700; font-weight: bold; margin-bottom: 10px;">RANK BENEFITS</p>
-                        <ul style="color: #95a5a6; font-size: 12px; line-height: 1.6;">
-                            <li>🏅 Rank E: Access to basic quests</li>
-                            <li>📈 Rank D: 10% exp bonus</li>
-                            <li>💰 Rank C: 20% gold bonus</li>
-                            <li>👥 Rank B: Guild companions unlocked</li>
-                            <li>⭐ Rank A: 50% drop rate bonus</li>
-                            <li>👑 Rank S: Master of the Guild</li>
-                        </ul>
-                    </div>
-                `;
-            }
-
-            static renderStats() {
-                this.updateHeaderStats();
-                const content = document.getElementById('gameContent');
-                const p = gameState.player;
-
-                content.innerHTML = `
-                    <h2 style="color: #ffd700; margin-bottom: 20px;">📊 CHARACTER STATS</h2>
-                    <div style="background: linear-gradient(135deg, rgba(26,26,46,0.8) 0%, rgba(22,33,62,0.8) 100%); border: 2px solid #e94560; border-radius: 8px; padding: 20px;">
-                        <div style="margin-bottom: 20px;">
-                            <h3 style="color: #ffd700; margin-bottom: 10px;">${p.name} - ${p.class.toUpperCase()}</h3>
-                            <p style="color: #95a5a6; font-size: 12px;">Level ${p.level} | Total EXP: ${p.exp + (p.level - 1) * p.expRequired}</p>
-                        </div>
-                        <div style="display: grid; gap: 12px;">
-                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px;">
-                                <div style="color: #95a5a6; font-size: 12px;">HP (Health)</div>
-                                <div style="color: #ffd700; font-size: 18px; font-weight: bold;">${p.stats.maxHP}</div>
-                            </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px;">
-                                <div style="color: #95a5a6; font-size: 12px;">ATK (Attack)</div>
-                                <div style="color: #ffd700; font-size: 18px; font-weight: bold;">${p.stats.attack}</div>
-                            </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px;">
-                                <div style="color: #95a5a6; font-size: 12px;">DEF (Defense)</div>
-                                <div style="color: #ffd700; font-size: 18px; font-weight: bold;">${p.stats.defense}</div>
-                            </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px;">
-                                <div style="color: #95a5a6; font-size: 12px;">MAG (Magic)</div>
-                                <div style="color: #ffd700; font-size: 18px; font-weight: bold;">${p.stats.magic}</div>
-                            </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px;">
-                                <div style="color: #95a5a6; font-size: 12px;">SPD (Speed)</div>
-                                <div style="color: #ffd700; font-size: 18px; font-weight: bold;">${p.stats.speed}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            static closeModal() {
-                document.getElementById('modal').classList.remove('active');
-            }
-        }
-
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
-        eventBus.on('player:levelUp', (level) => {
-            GameUI.updateHeaderStats();
+function renderInventory() {
+    let html = '<h2>🎒 INVENTORY</h2>';
+    if (gameState.inventory.length === 0) {
+        html += '<div style="color: var(--muted); text-align: center; margin-top: 20px;">Empty</div>';
+    } else {
+        html += '<div class="grid">';
+        gameState.inventory.forEach((item, i) => {
+            html += `<div class="grid-item ${item.rarity}" title="${item.name}">
+                💎<br><span style="font-size: 9px;">${item.value}g</span>
+            </div>`;
         });
+        html += '</div>';
+    }
+    document.getElementById('gameContent').innerHTML = html;
+}
 
-        eventBus.on('player:expGain', (amount) => {
-            GameUI.updateHeaderStats();
-        });
+function renderCraft() {
+    let html = '<h2>🔨 CRAFTING</h2>';
+    recipes.forEach((r, i) => {
+        html += `<div class="card">
+            <div class="card-title">${r.name}</div>
+            <div class="card-text" style="margin-bottom: 8px;">Needs: ${r.requires.map(x => `${x.qty}x ${x.name}`).join(', ')}</div>
+            <button onclick="craft(${i})" style="width: 100%;">Craft (${r.result.value}g)</button>
+        </div>`;
+    });
+    document.getElementById('gameContent').innerHTML = html;
+}
 
-        eventBus.on('battle:victory', (data) => {
-            GuildSystem.updateRankProgress(gameState.guild, Math.floor(data.exp * 0.5), 1);
-            gameState.save();
-        });
+function renderGuild() {
+    const g = gameState.guild;
+    const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
+    const rankReqs = [1000, 5000, 25000, 100000, 500000, 2000000];
+    const rankIdx = ranks.indexOf(g.rank);
+    const nextReq = rankReqs[Math.min(rankIdx + 1, rankReqs.length - 1)];
+    const progress = Math.floor((g.exp / nextReq) * 100);
+    
+    let html = `<h2>⚔ GUILD HALL</h2>
+        <div class="card">
+            <div class="card-title">Rank ${g.rank}</div>
+            <div class="card-text" style="margin-bottom: 8px;">Progress: ${g.exp} / ${nextReq}</div>
+            <div style="background: rgba(0,0,0,0.3); height: 16px; border-radius: 3px; overflow: hidden;">
+                <div style="background: linear-gradient(90deg, var(--accent), var(--gold)); height: 100%; width: ${progress}%; display: flex; align-items: center; justify-content: center; color: #000; font-size: 10px; font-weight: bold;">${progress}%</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">BENEFITS</div>
+            <div class="card-text">
+                🏅 E: Basic Access<br>
+                📈 D: +10% EXP<br>
+                💰 C: +20% Gold<br>
+                👥 B: Companions<br>
+                ⭐ A: +50% Drops<br>
+                👑 S: Master
+            </div>
+        </div>`;
+    document.getElementById('gameContent').innerHTML = html;
+}
 
-        eventBus.on('guild:rankUp', (guild) => {
-            alert(`🎉 You've been promoted to Rank ${guild.rank}!`);
-        });
+function renderStats() {
+    const p = gameState.player;
+    const html = `<h2>📊 CHARACTER</h2>
+        <div class="card">
+            <div class="card-title">${p.name} [${p.class.toUpperCase()}]</div>
+            <div class="card-text">
+                Level ${p.level} | ${p.exp}/${p.expRequired} EXP<br>
+                HP: ${p.hp}/${p.maxHP}<br>
+                ATK: ${p.stats.atk} | DEF: ${p.stats.def}<br>
+                MAG: ${p.stats.mag} | SPD: ${p.stats.spd}<br>
+                Gold: ${p.gold}
+            </div>
+        </div>`;
+    document.getElementById('gameContent').innerHTML = html;
+}
 
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        window.addEventListener('load', () => {
-            if (gameState.load()) {
-                GameUI.showScreen('gameScreen');
-                GameUI.renderExplore();
+function startBattle(locName, monsterName) {
+    const loc = locations.find(l => l.name === locName);
+    const monster = new Monster(loc.level, monsterName);
+    gameState.battle = { enemy: monster, turn: 0 };
+    battle.log = [];
+    battle.turn = 0;
+    battle.updateUI();
+    showScreen('battleScreen');
+}
+
+function acceptQuest(idx) {
+    const q = questPool[idx];
+    gameState.quests.push({ ...q, progress: 0 });
+    showModal('Quest Accepted!', `Find and defeat ${q.count} ${q.target}s!`);
+}
+
+function craft(idx) {
+    const recipe = recipes[idx];
+    let canCraft = true;
+    
+    recipe.requires.forEach(req => {
+        const count = gameState.inventory.filter(i => i.name === req.name).length;
+        if (count < req.qty) {
+            canCraft = false;
+        }
+    });
+    
+    if (canCraft) {
+        recipe.requires.forEach(req => {
+            for (let i = 0; i < req.qty; i++) {
+                const idx = gameState.inventory.findIndex(item => item.name === req.name);
+                if (idx !== -1) gameState.inventory.splice(idx, 1);
             }
         });
+        gameState.inventory.push(recipe.result);
+        saveGame();
+        showModal('Crafted!', `Created ${recipe.result.name}!`);
+        renderCraft();
+    } else {
+        showModal('Cannot Craft', 'Missing ingredients!');
+    }
+}
 
-        // Save game periodically
-        setInterval(() => {
-            if (gameState.player) {
-                gameState.save();
-            }
-        }, 10000);
+function checkGuildRankUp() {
+    const g = gameState.guild;
+    const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
+    const rankReqs = [1000, 5000, 25000, 100000, 500000, 2000000];
+    const rankIdx = ranks.indexOf(g.rank);
+    
+    if (rankIdx < rankReqs.length - 1 && g.exp >= rankReqs[rankIdx + 1]) {
+        g.rank = ranks[rankIdx + 1];
+        g.exp = 0;
+        showModal('🎉 RANK UP!', `Promoted to Rank ${g.rank}!`);
+    }
+}
 
-        // Prevent accidental navigation
-        window.addEventListener('beforeunload', (e) => {
-            if (gameState.player) {
-                e.preventDefault();
-            }
-        });
-    </script>
+function showModal(title, text, buttons = [{ text: 'OK', action: 'close' }]) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalText').textContent = text;
+    document.getElementById('modalButtons').innerHTML = buttons.map(b => 
+        `<button onclick="${b.action || "closeModal()"}">${b.text}</button>`
+    ).join('');
+    document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+}
+
+function updateStats() {
+    const p = gameState.player;
+    document.getElementById('sLevel').textContent = p.level;
+    document.getElementById('sExp').textContent = `${p.exp}/${p.expRequired}`;
+    document.getElementById('sHP').textContent = `${p.hp}/${p.maxHP}`;
+    document.getElementById('sGold').textContent = p.gold;
+    document.getElementById('sRank').textContent = gameState.guild.rank;
+}
+
+function startGame() {
+    showScreen('charCreationScreen');
+}
+
+function createCharacter() {
+    const name = document.getElementById('charName').value.trim();
+    const classType = document.getElementById('charClass').value;
+    
+    if (!name) {
+        alert('Enter a name!');
+        return;
+    }
+    
+    gameState.player = new Player(name, classType);
+    gameState.guild = { rank: 'E', exp: 0 };
+    gameState.inventory = [];
+    
+    updateStats();
+    showScreen('gameScreen');
+    switchTab('explore');
+    saveGame();
+}
+
+// Save periodically
+setInterval(() => {
+    if (gameState.player) {
+        saveGame();
+    }
+}, 5000);
+
+// Load on start
+window.addEventListener('load', () => {
+    if (loadGame()) {
+        gameState.battle = null;
+        updateStats();
+        showScreen('gameScreen');
+        switchTab('explore');
+    }
+});
+
+// Prevent close during game
+window.addEventListener('beforeunload', (e) => {
+    if (gameState.player) {
+        e.preventDefault();
+    }
+});
+</script>
 </body>
 </html>
